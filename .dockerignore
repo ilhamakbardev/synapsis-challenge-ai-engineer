@@ -1,5 +1,6 @@
 __pycache__/
-.git/
+.git
+.gitignore
 .venv*/
 *.log
 .DS_Store
