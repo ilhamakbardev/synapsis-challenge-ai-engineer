@@ -21,34 +21,31 @@ with col2:
     st.subheader("Summary")
     summary_placeholder = st.empty()
 
+# Retry logic for fetching live stats
+def fetch_data_with_retries(url, retries=5, delay=2):
+    for attempt in range(retries):
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                st.error(f"Failed to fetch data: {response.status_code}")
+                return None
+        except requests.exceptions.RequestException as e:
+            if attempt < retries - 1:
+                st.warning(f"[WARNING] Attempt {attempt + 1} failed: {e}. Retrying...")
+                time.sleep(delay)
+            else:
+                st.error(f"[ERROR] Max retries reached. Could not fetch data: {e}")
+                return None
 
 @st.cache_data(ttl=1)
 def get_live_stats():
-    try:
-        response = requests.get("http://127.0.0.1:8000/api/stats/live")
-        if response.status_code == 200:
-            return response.json()
-        else:
-            st.error("Failed to fetch live stats")
-            return None
-    except Exception as e:
-        st.error(f"[ERROR] Failed to fetch stats: {e}")
-        return None
-
+    return fetch_data_with_retries("http://api:8000/api/stats/live")
 
 @st.cache_data(ttl=60)
 def get_forecast():
-    try:
-        response = requests.get("http://127.0.0.1:8000/api/forecast")
-        if response.status_code == 200:
-            return response.json()
-        else:
-            st.error("Failed to fetch forecast data")
-            return None
-    except Exception as e:
-        st.error(f"[ERROR] Failed to fetch forecast: {e}")
-        return None
-
+    return fetch_data_with_retries("http://api:8000/api/forecast")
 
 timestamps, entries, leaves = [], [], []
 while True:
@@ -65,16 +62,17 @@ while True:
             f"Total Vehicles Visited: {stats['total_vehicle_visited']}")
 
     forecast_data = get_forecast()
+
     if forecast_data and 'forecast' in forecast_data:
         try:
             df = pd.DataFrame(forecast_data['forecast'])
-            df['ds'] = pd.to_datetime(df['ds'])
+            df['ds'] = pd.to_datetime(df['ds'], format='%Y-%m-%dT%H:%M:%S', errors='coerce')
             now = datetime.now()
             start_time = now - timedelta(hours=2)
             end_time = now + timedelta(hours=2)
             df = df[(df['ds'] >= start_time) & (df['ds'] <= end_time)]
             fig = px.line(df, x='ds', y='yhat', title='Vehicle Count Forecasting (+1 hours)', labels={
-                          'ds': 'Time', 'yhat': 'Vehicle Count'})
+                        'ds': 'Time', 'yhat': 'Vehicle Count'})
             fig.add_scatter(x=df['ds'], y=df['yhat_upper'], mode='lines', line=dict(
                 dash='dot'), name='Upper Bound')
             fig.add_scatter(x=df['ds'], y=df['yhat_lower'], mode='lines', line=dict(
@@ -82,6 +80,7 @@ while True:
             forecast_chart_placeholder.plotly_chart(fig)
         except Exception as e:
             st.error(f"[ERROR] Failed to display forecast: {e}")
+
 
     time.sleep(refresh_rate)
     st.rerun()
