@@ -11,21 +11,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  vehicle-counter:
-    build:
-      context: ./vehicle-counter
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    environment:
-      - DISPLAY=$DISPLAY
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-    image: vicase312/vehicle-counter-app:latest
-    depends_on:
-      - db
-    stdin_open: true # Allows interaction with the terminal
-    tty: true # Allocates a pseudo-TTY to the container
+  # vehicle-counter:
+  #   build:
+  #     context: ./vehicle-counter
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - DISPLAY=$DISPLAY
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix
+  #   image: vicase312/vehicle-counter-app:latest
+  #   depends_on:
+  #     - db
+  #   stdin_open: true # Allows interaction with the terminal
+  #   tty: true # Allocates a pseudo-TTY to the container
 
   api:
     build:
@@ -36,6 +36,8 @@ services:
     image: vicase312/api-vehicle-counter:latest
     depends_on:
       - db
+    ports:
+      - "8000:8000"
 
   dashboard:
     build:
@@ -46,6 +48,8 @@ services:
     image: vicase312/dashboard-vehicle-counter:latest
     depends_on:
       - api
+    ports:
+      - "8501:8501"
 
 volumes:
   postgres_data:
