@@ -10,7 +10,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+    #   - ./api/vehicles_counter_seed.sql:/vehicles_counter_seed.sql
+    # command: bash -c "psql -U postgres -d vehicles-counter -f /vehicles_counter_seed.sql && docker-entrypoint.sh postgres"
 
+  ####### commented because still error build to docker ######
   # vehicle-counter:
   #   build:
   #     context: ./vehicle-counter
@@ -38,6 +43,8 @@ services:
       - db
     ports:
       - "8000:8000"
+    networks:
+      - mynetwork
 
   dashboard:
     build:
@@ -50,6 +57,12 @@ services:
       - api
     ports:
       - "8501:8501"
+    networks:
+      - mynetwork
 
 volumes:
   postgres_data:
+
+networks:
+  mynetwork:
+    driver: bridge

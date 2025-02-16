@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS area_configurations (
     id SERIAL PRIMARY KEY,
-    area_name VARCHAR(255) UNIQUE,
+    area_name VARCHAR(255),
     coordinates TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
