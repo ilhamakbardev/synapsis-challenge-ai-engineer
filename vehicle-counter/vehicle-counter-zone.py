@@ -4,7 +4,9 @@ WARNING: Please ensure that Docker is running before executing this script.
 This script requires the vehicle detection, tracking, and counting system to be running inside Docker containers.
 Make sure to start the Docker containers first by running the following command in the terminal of root directory:
 
-    docker-compose up --build
+    docker-compose build --no-cache
+
+    docker-compose up -d
 
 Once the containers are up and running, you can execute this script to process the video stream and log detections.
 
@@ -24,13 +26,13 @@ import json
 
 parser = argparse.ArgumentParser(
     prog='yolov10s',
-    description='Track vehicles strictly inside a polygon and count total entries, exits, and current count.'
+    description='Track vehicles strictly inside a polygon and count total vehicles, entries, and exits.'
 )
 
 parser.add_argument(
     '-i', '--input',
     default="https://restreamer.kotabogor.go.id/memfs/2a7383a3-78b6-4af9-b7d5-7454ac3924fa_output_0.m3u8?session=LVKygG8x2MLzhJV7vhJmWP",
-    help='Input video source URL or path (default: Bogor City CCTV stream)'
+    help='Input video source URL or path (default: Bogor Single Windows CCTV stream)'
 )
 
 args = parser.parse_args()
