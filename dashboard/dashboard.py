@@ -26,6 +26,8 @@ with col2:
     summary_placeholder = st.empty()
 
 # Retry logic for fetching live stats
+
+
 def fetch_data_with_retries(url, retries=5, delay=2):
     for attempt in range(retries):
         try:
@@ -37,19 +39,24 @@ def fetch_data_with_retries(url, retries=5, delay=2):
                 return None
         except requests.exceptions.RequestException as e:
             if attempt < retries - 1:
-                st.warning(f"[WARNING] Attempt {attempt + 1} failed: {e}. Retrying...")
+                st.warning(
+                    f"[WARNING] Attempt {attempt + 1} failed: {e}. Retrying...")
                 time.sleep(delay)
             else:
-                st.error(f"[ERROR] Max retries reached. Could not fetch data: {e}")
+                st.error(
+                    f"[ERROR] Max retries reached. Could not fetch data: {e}")
                 return None
+
 
 @st.cache_data(ttl=1)
 def get_live_stats():
     return fetch_data_with_retries("http://api:8000/api/stats/live")
 
+
 @st.cache_data(ttl=60)
 def get_forecast():
     return fetch_data_with_retries("http://api:8000/api/forecast")
+
 
 timestamps, entries, leaves = [], [], []
 while True:
@@ -70,13 +77,14 @@ while True:
     if forecast_data and 'forecast' in forecast_data:
         try:
             df = pd.DataFrame(forecast_data['forecast'])
-            df['ds'] = pd.to_datetime(df['ds'], format='%Y-%m-%dT%H:%M:%S', errors='coerce')
+            df['ds'] = pd.to_datetime(
+                df['ds'], format='%Y-%m-%dT%H:%M:%S', errors='coerce')
             now = datetime.now()
             start_time = now - timedelta(hours=2)
             end_time = now + timedelta(hours=2)
             df = df[(df['ds'] >= start_time) & (df['ds'] <= end_time)]
             fig = px.line(df, x='ds', y='yhat', title='Vehicle Count Forecasting (+1 hours)', labels={
-                        'ds': 'Time', 'yhat': 'Vehicle Count'})
+                'ds': 'Time', 'yhat': 'Vehicle Count'})
             fig.add_scatter(x=df['ds'], y=df['yhat_upper'], mode='lines', line=dict(
                 dash='dot'), name='Upper Bound')
             fig.add_scatter(x=df['ds'], y=df['yhat_lower'], mode='lines', line=dict(
