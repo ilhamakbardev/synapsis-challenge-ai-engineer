@@ -1,3 +1,7 @@
+"""
+RECOMMENDED to run it via docker instead of local.
+"""
+
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.responses import JSONResponse
 from psycopg2 import connect
@@ -15,7 +19,7 @@ DB_CONFIG = {
     'dbname': os.getenv("POSTGRES_DB", "vehicles-counter"),
     'user': os.getenv("POSTGRES_USER", "postgres"),
     'password': os.getenv("POSTGRES_PASSWORD", "admin"),
-    'host': os.getenv("POSTGRES_HOST", "db"),  # Docker service name
+    'host': os.getenv("POSTGRES_HOST", "db"),
     'port': os.getenv("POSTGRES_PORT", "5432")
 }
 
@@ -23,21 +27,19 @@ DB_CONFIG = {
 def get_db_connection():
     return connect(**DB_CONFIG)
 
+
 @app.post("/api/areas/")
 async def create_area(request: Request):
     data = await request.json()
     area_name = data.get("area_name")
     coordinates = data.get("coordinates")
-    
+
     if not area_name or not coordinates:
-        raise HTTPException(status_code=400, detail="Area name and coordinates are required")
-    
+        raise HTTPException(
+            status_code=400, detail="Area name and coordinates are required")
+
     conn = get_db_connection()
     try:
-        # Log incoming area data for debugging
-        print(f"Received area_name data: {area_name}")
-        print(f"Received coordinates data: {coordinates}")
-
         with conn.cursor() as cur:
             try:
                 cur.execute('''
@@ -46,65 +48,63 @@ async def create_area(request: Request):
                     RETURNING id;
                 ''', (area_name, coordinates))
                 result = cur.fetchone()
-                
+
                 if result is None:
-                    raise HTTPException(status_code=500, detail="Failed to insert area")
+                    raise HTTPException(
+                        status_code=500, detail="Failed to insert area")
                 area_id = result[0]
                 conn.commit()
             except Exception as e:
                 print(f"Error during database operation: {e}")
-                raise HTTPException(status_code=500, detail="Database error occurred")
+                raise HTTPException(
+                    status_code=500, detail="Database error occurred")
         return {"id": area_id, "area_name": area_name, "coordinates": coordinates}
     finally:
         conn.close()
 
 
-
 @app.post("/api/detections/")
 async def create_detection_log(request: Request):
     try:
-        # Parse the JSON data directly from the request body
         log = await request.json()
 
-        # Extract the parameters from the JSON data
         area_id = log.get("area_id")
         timestamp = log.get("timestamp")
         vehicle_id = log.get("vehicle_id")
         status = log.get("status")
 
-        # Check if all required fields are present
         if not all([area_id, timestamp, vehicle_id, status]):
-            raise HTTPException(status_code=400, detail="Missing required fields")
+            raise HTTPException(
+                status_code=400, detail="Missing required fields")
 
-        # Convert the timestamp to datetime
         try:
             timestamp = datetime.fromisoformat(timestamp)
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid timestamp format")
+            raise HTTPException(
+                status_code=400, detail="Invalid timestamp format")
 
-        # Get database connection
         conn = get_db_connection()
         with conn.cursor() as cur:
-            # Check if the area_id exists in the area_configurations table
-            cur.execute("SELECT id FROM area_configurations WHERE id = %s", (area_id,))
+            cur.execute(
+                "SELECT id FROM area_configurations WHERE id = %s", (area_id,))
             area_exists = cur.fetchone()
 
             if not area_exists:
-                raise HTTPException(status_code=400, detail=f"Area with ID {area_id} does not exist.")
+                raise HTTPException(
+                    status_code=400, detail=f"Area with ID {area_id} does not exist.")
 
-            # Insert the detection log into the vehicle_logs table
             cur.execute('''
                 INSERT INTO vehicle_logs (timestamp, vehicle_id, status, area_id)
                 VALUES (%s, %s, %s, %s)
                 RETURNING id;
             ''', (timestamp, vehicle_id, status, area_id))
 
-            # Commit the transaction
             conn.commit()
             return {"message": "Detection log inserted successfully", "log_id": cur.fetchone()[0]}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/stats/")
 def get_stats(start_time: Optional[str] = Query(None), end_time: Optional[str] = Query(None), page: int = 1, size: int = 10):
@@ -128,35 +128,33 @@ def get_stats(start_time: Optional[str] = Query(None), end_time: Optional[str] =
 @app.get("/api/stats/live")
 def get_live_stats():
     with get_db_connection() as conn, conn.cursor() as cur:
-        # Total vehicle count by unique vehicle IDs
         cur.execute("SELECT COUNT(DISTINCT vehicle_id) FROM vehicle_logs")
         total_vehicles = cur.fetchone()[0]
 
-        # Vehicles visited in the last 1 second
         one_second_ago = datetime.now() - timedelta(seconds=1)
+
+        # Correct way to compare datetime in SQL:
         cur.execute(
             "SELECT COUNT(DISTINCT vehicle_id) "
             "FROM vehicle_logs "
             "WHERE timestamp >= %s AND status = 'entered'",
-            (one_second_ago,)
+            (one_second_ago,)  # Pass the datetime object as a parameter
         )
         last_second_count_enter = cur.fetchone()[0]
 
-        # Vehicles leaved in the last 1 second
-        one_second_ago = datetime.now() - timedelta(seconds=1)
         cur.execute(
             "SELECT COUNT(DISTINCT vehicle_id) "
             "FROM vehicle_logs "
             "WHERE timestamp >= %s AND status = 'exited'",
-            (one_second_ago,)
+            (one_second_ago,)  # Pass the datetime object as a parameter
         )
         last_second_count_leave = cur.fetchone()[0]
 
-    return {
-        "total_vehicle_visited": total_vehicles,
-        "last_visited_one_second": last_second_count_enter,
-        "last_leave_one_second": last_second_count_leave
-    }
+        return {
+            "total_vehicle_visited": total_vehicles,
+            "last_visited_one_second": last_second_count_enter,
+            "last_leave_one_second": last_second_count_leave
+        }
 
 
 @app.get("/api/forecast")
