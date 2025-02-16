@@ -1,3 +1,7 @@
+"""
+RECOMMENDED to run it via docker instead of local.
+"""
+
 import streamlit as st
 import requests
 import plotly.express as px
@@ -80,7 +84,6 @@ while True:
             forecast_chart_placeholder.plotly_chart(fig)
         except Exception as e:
             st.error(f"[ERROR] Failed to display forecast: {e}")
-
 
     time.sleep(refresh_rate)
     st.rerun()

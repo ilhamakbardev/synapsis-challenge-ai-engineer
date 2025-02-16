@@ -48,7 +48,6 @@ class VehicleCounter:
         self.exited = set()
         self.area_id = None
 
-
     def save_area(self, area_name):
         coordinates_str = json.dumps([[str(x), str(y)] for x, y in self.polygon])
 
@@ -68,7 +67,6 @@ class VehicleCounter:
         else:
             raise Exception(f"Failed to save area: {response.text}")
 
-
     def log_detection(self, vehicle_id, status, area_id):
         detection_data = {
             "vehicle_id": vehicle_id,
@@ -85,7 +83,6 @@ class VehicleCounter:
         
         if response.status_code != 200:
             raise Exception(f"Failed to log detection: {response.text}")
-
 
     def set_polygon(self):
         area_name = input("Enter area name: ")
@@ -114,10 +111,8 @@ class VehicleCounter:
 
         self.save_area(area_name)
 
-
     def is_inside_polygon(self, point):
         return cv2.pointPolygonTest(self.polygon.astype(np.float32), tuple(map(int, point)), False) >= 0
-
 
     def process_frame(self, frame):
         results = self.model.track(frame, imgsz=640, persist=True)[0]
@@ -156,7 +151,6 @@ class VehicleCounter:
         cv2.polylines(frame, [self.polygon], isClosed=True, color=(255, 0, 0), thickness=2)
 
         return frame
-
 
     def process_video(self):
         self.set_polygon()
