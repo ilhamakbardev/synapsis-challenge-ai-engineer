@@ -9,13 +9,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_three:/var/lib/postgresql/data
+      - ./api/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      # - ./vehicles_counter_seed.sql:/docker-entrypoint-initdb.d/vehicles_counter_seed.sql
     networks:
       - mynetwork
-    #   - ./api/vehicles_counter_seed.sql:/vehicles_counter_seed.sql
-    # command: bash -c "psql -U postgres -d vehicles-counter -f /vehicles_counter_seed.sql && docker-entrypoint.sh postgres"
 
-  ####### commented because still error build to docker ######
+  #----- commented because still error build to docker-----
   # vehicle-counter:
   #   build:
   #     context: ./vehicle-counter
@@ -33,6 +33,7 @@ services:
   #   tty: true # Allocates a pseudo-TTY to the container
 
   api:
+    container_name: api-vehicle-counter
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -47,6 +48,7 @@ services:
       - mynetwork
 
   dashboard:
+    container_name: dashboard-vehicle-counter
     build:
       context: ./dashboard
       dockerfile: Dockerfile
@@ -61,7 +63,7 @@ services:
       - mynetwork
 
 volumes:
-  postgres_data:
+  postgres_data_three:
 
 networks:
   mynetwork:
