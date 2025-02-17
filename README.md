@@ -22,6 +22,8 @@ git clone https://github.com/ilhamakbardev/synapsis-challenge-ai-engineer.git
 cd synapsis-challenge-ai-engineer/
 ```
 
+or you can pull it from [my docker hub](https://hub.docker.com/repositories/vicase312) 
+
 #### If you prefer to use docker
 
 1. build docker:
