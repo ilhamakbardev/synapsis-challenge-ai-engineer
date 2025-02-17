@@ -73,6 +73,8 @@ cd synapsis-challenge-ai-engineer/
 6. just wait a moment, it start to run.
    ![tracker run](assets-readme/set-polygon-3.png)
 
+7. if you want to access api deployed to docker you can use baseUrl : http://localhost:8000, and dashboard : http://localhost:8501
+
 #### If you prefer to use local setup
 
 just create venv and install requirements in each directory, you can adjust DB CONFIG on your own needs, make sure you run in order : api, vehicle-counter, and then dashboard
