@@ -65,15 +65,18 @@ cd synapsis-challenge-ai-engineer/
 5. set polygon area:
 
    after entering the area name, a python runtime app should appear in the bottom. click it.
+   
    ![python runtime appear](assets-readme/set-polygon-1.png)
 
    then draw polygon area : click left mouse to set coordinate, and then press q
+   
    ![draw polygon](assets-readme/set-polygon-2.png)
 
-6. just wait a moment, it start to run.
+7. just wait a moment, it start to run.
+   
    ![tracker run](assets-readme/set-polygon-3.png)
 
-7. if you want to access api deployed to docker you can use baseUrl : http://localhost:8000, and dashboard : http://localhost:8501
+9. if you want to access api deployed to docker you can use baseUrl : http://localhost:8000, and dashboard : http://localhost:8501
 
 #### If you prefer to use local setup
 
