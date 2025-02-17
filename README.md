@@ -14,7 +14,7 @@ make sure your tools match this version to ensure smooth running
 
 ### Run Project
 
-you can use docker or your local setup to run this project, first clone this github repo
+you can use docker or your local setup to run this project, first clone this github repo (or you can pull it from [my docker hub](https://hub.docker.com/repositories/vicase312))
 
 ```bash
 git clone https://github.com/ilhamakbardev/synapsis-challenge-ai-engineer.git
@@ -22,7 +22,7 @@ git clone https://github.com/ilhamakbardev/synapsis-challenge-ai-engineer.git
 cd synapsis-challenge-ai-engineer/
 ```
 
-or you can pull it from [my docker hub](https://hub.docker.com/repositories/vicase312) 
+
 
 #### If you prefer to use docker
 
